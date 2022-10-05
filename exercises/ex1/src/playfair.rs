@@ -1,9 +1,9 @@
-use std::io::Read;
-
-use thiserror::Error;
+use std::fmt::Display;
 
 use crate::cryptanalysis::Char;
-use itertools::{chain, Itertools};
+
+use itertools::Itertools;
+use thiserror::Error;
 
 #[derive(Debug, PartialEq, PartialOrd, Error)]
 pub enum PlayfairError {
@@ -43,9 +43,8 @@ const PLAYFAIR_ALPHABET: [char; 25] = [
 
 #[derive(Debug, Default)]
 pub struct Playfair {
-    key: String,
     pad: u8,
-    matrix: [char; 25],
+    key_matrix: [char; 25],
     i_index: usize,
 }
 
@@ -63,9 +62,8 @@ impl Playfair {
         });
 
         Self {
-            key,
             pad: pad as u8,
-            matrix,
+            key_matrix: matrix,
             i_index,
         }
     }
@@ -73,14 +71,14 @@ impl Playfair {
 
 /// GETTERS
 impl Playfair {
-    pub fn matrix(&self) -> [&[char]; 5] {
-        [
-            &self.matrix[0..5],
-            &self.matrix[5..10],
-            &self.matrix[10..15],
-            &self.matrix[15..20],
-            &self.matrix[20..25],
-        ]
+    pub fn matrix(&self) -> Matrix {
+        Matrix([
+            &self.key_matrix[0..5],
+            &self.key_matrix[5..10],
+            &self.key_matrix[10..15],
+            &self.key_matrix[15..20],
+            &self.key_matrix[20..25],
+        ])
     }
 
     pub fn pad(&self) -> char {
@@ -118,7 +116,7 @@ impl Playfair {
             .map(|(&c1, &c2)| {
                 let c2 = if c1 == c2 { self.pad } else { c2 };
 
-                let pos_1 = match self.matrix.iter().position(|&c| c as u8 == c1) {
+                let pos_1 = match self.key_matrix.iter().position(|&c| c as u8 == c1) {
                     Some(val) => val,
                     None => {
                         if Char::J as u8 == c1 {
@@ -128,12 +126,12 @@ impl Playfair {
                         }
                     }
                 };
-                let pos_2 = match self.matrix.iter().position(|&c| c as u8 == c2) {
+                let pos_2 = match self.key_matrix.iter().position(|&c| c as u8 == c2) {
                     Some(val) => val,
                     None => return Err(PlayfairError::EncodeError),
                 };
 
-                let matrix = self.matrix();
+                let matrix = self.matrix().0;
 
                 let (row_1, col_1) = (pos_1 / 5, pos_1 % 5);
                 let (row_2, col_2) = (pos_2 / 5, pos_2 % 5);
@@ -173,17 +171,17 @@ impl Playfair {
             .tuple_windows()
             .step_by(2)
             .map(|(&c1, &c2)| {
-                let pos_1 = match self.matrix.iter().position(|&c| c as u8 == c1) {
+                let pos_1 = match self.key_matrix.iter().position(|&c| c as u8 == c1) {
                     Some(val) => val,
                     None => return Err(PlayfairError::EncodeError),
                 };
 
-                let pos_2 = match self.matrix.iter().position(|&c| c as u8 == c2) {
+                let pos_2 = match self.key_matrix.iter().position(|&c| c as u8 == c2) {
                     Some(val) => val,
                     None => return Err(PlayfairError::EncodeError),
                 };
 
-                let matrix = self.matrix();
+                let matrix = self.matrix().0;
 
                 let (row_1, col_1) = (pos_1 / 5, pos_1 % 5);
                 let (row_2, col_2) = (pos_2 / 5, pos_2 % 5);
@@ -212,5 +210,17 @@ impl Playfair {
             })
             .flatten_ok()
             .collect::<_>();
+    }
+}
+
+pub struct Matrix<'a>([&'a [char]; 5]);
+
+impl<'a> Display for Matrix<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "[")?;
+        self.0.iter().for_each(|row| {
+            writeln!(f, "  {row:?}");
+        });
+        writeln!(f, "]")
     }
 }
