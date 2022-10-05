@@ -58,10 +58,6 @@ fn main() {
     }
 
     if print {
-        println!("Matrix: [");
-        playfair.matrix().iter().for_each(|row| {
-            println!("  {row:?}");
-        });
-        println!("]");
+        println!("Matrix: {}", playfair.matrix());
     }
 }
