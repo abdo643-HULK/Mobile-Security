@@ -1,8 +1,10 @@
 pub mod cryptanalysis;
+pub mod geocaching;
 pub mod playfair;
 
 use clap::{ArgGroup, Parser};
 use core::fmt::Debug;
+use cryptanalysis::Char;
 use playfair::Playfair;
 
 #[derive(Parser, Debug)]
@@ -38,6 +40,7 @@ fn main() {
 
     let text = text
         .to_ascii_uppercase()
+        .replace(Char::J, &Char::I.to_string())
         .split_whitespace()
         .collect::<String>();
 
@@ -46,10 +49,13 @@ fn main() {
     } else if decode {
         playfair.decode(&text)
     } else {
-        panic!("-e (encode) or -d (decode) flag must be passed in");
+        panic!("Option -e (encode) or -d (decode)  must be passed in");
     };
 
-    text.and_then(|text| Ok(println!("{text}")));
+    match text {
+        Ok(text) => println!("{text}"),
+        Err(err) => println!("{err}"),
+    }
 
     if print {
         println!("Matrix: [");

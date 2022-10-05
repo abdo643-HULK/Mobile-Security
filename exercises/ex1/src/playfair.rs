@@ -3,7 +3,7 @@ use std::io::Read;
 use thiserror::Error;
 
 use crate::cryptanalysis::Char;
-use itertools::Itertools;
+use itertools::{chain, Itertools};
 
 #[derive(Debug, PartialEq, PartialOrd, Error)]
 pub enum PlayfairError {
@@ -46,22 +46,27 @@ pub struct Playfair {
     key: String,
     pad: u8,
     matrix: [char; 25],
+    i_index: usize,
 }
 
 impl Playfair {
     pub fn new(key: String, pad: char) -> Self {
         let mut matrix: [char; 25] = Default::default();
-
+        let mut i_index: usize = 0;
         let arr = key.chars().into_iter().dedup().collect::<Vec<_>>();
         let filler = PLAYFAIR_ALPHABET.iter().filter(|c| !arr.contains(c));
-        arr.iter().chain(filler).enumerate().for_each(|(idx, c)| {
-            matrix[idx] = *c;
+        arr.iter().chain(filler).enumerate().for_each(|(idx, &c)| {
+            matrix[idx] = c;
+            if c == Char::I {
+                i_index = idx
+            }
         });
 
         Self {
             key,
             pad: pad as u8,
             matrix,
+            i_index,
         }
     }
 }
@@ -85,7 +90,20 @@ impl Playfair {
 
 impl Playfair {
     pub fn encode(&self, plain_text: &str) -> Result<String, PlayfairError> {
+        // let plain_text = plain_text
+        //     .to_ascii_uppercase()
+        //     .replace(Char::J, &Char::I.to_string())
+        //     .split_whitespace()
+        //     .collect::<String>();
+
+        // let plain_text = if plain_text.len() % 2 != 0 {
+        //     plain_text + self.pad().to_string().as_str()
+        // } else {
+        //     plain_text
+        // };
+
         let p: Vec<u8>;
+
         let plain_text = if plain_text.len() % 2 != 0 {
             p = [&plain_text.as_bytes()[..], &[self.pad]].concat();
             &p
@@ -100,41 +118,47 @@ impl Playfair {
             .map(|(&c1, &c2)| {
                 let c2 = if c1 == c2 { self.pad } else { c2 };
 
-                let pos1 = match self.matrix.iter().position(|&c| c as u8 == c1) {
+                let pos_1 = match self.matrix.iter().position(|&c| c as u8 == c1) {
                     Some(val) => val,
-                    None => return Err(PlayfairError::EncodeError),
+                    None => {
+                        if Char::J as u8 == c1 {
+                            self.i_index
+                        } else {
+                            return Err(PlayfairError::EncodeError);
+                        }
+                    }
                 };
-                let pos2 = match self.matrix.iter().position(|&c| c as u8 == c2) {
+                let pos_2 = match self.matrix.iter().position(|&c| c as u8 == c2) {
                     Some(val) => val,
                     None => return Err(PlayfairError::EncodeError),
                 };
 
                 let matrix = self.matrix();
 
-                let (row1, col1) = (pos1 / 5, pos1 % 5);
-                let (row2, col2) = (pos2 / 5, pos2 % 5);
+                let (row_1, col_1) = (pos_1 / 5, pos_1 % 5);
+                let (row_2, col_2) = (pos_2 / 5, pos_2 % 5);
 
-                let (cipher1, cipher2) = if row1 == row2 {
+                let encrypted_chars = if row_1 == row_2 {
                     // same row
-                    let cipher1 = matrix[row1][(col1 + 1) % 5];
-                    let cipher2 = matrix[row2][(col2 + 1) % 5];
+                    let encrypted_char_1 = matrix[row_1][(col_1 + 1) % 5];
+                    let encrypted_char_2 = matrix[row_2][(col_2 + 1) % 5];
 
-                    (cipher1, cipher2)
-                } else if col1 == col2 {
+                    [encrypted_char_1, encrypted_char_2]
+                } else if col_1 == col_2 {
                     // same column
-                    let cipher1 = matrix[(row1 + 1) % 5][col1];
-                    let cipher2 = matrix[(row2 + 1) % 5][col2];
+                    let encrypted_char_1 = matrix[(row_1 + 1) % 5][col_1];
+                    let encrypted_char_2 = matrix[(row_2 + 1) % 5][col_2];
 
-                    (cipher1, cipher2)
+                    [encrypted_char_1, encrypted_char_2]
                 } else {
                     // different rows and columns
-                    let cipher1 = matrix[row1][col2];
-                    let cipher2 = matrix[row2][col1];
+                    let encrypted_char_1 = matrix[row_1][col_2];
+                    let encrypted_char_2 = matrix[row_2][col_1];
 
-                    (cipher1, cipher2)
+                    [encrypted_char_1, encrypted_char_2]
                 };
 
-                Ok([cipher1, cipher2])
+                Ok(encrypted_chars)
             })
             .flatten_ok()
             .collect::<_>();
@@ -143,53 +167,50 @@ impl Playfair {
     }
 
     pub fn decode(&self, cipher_text: &str) -> Result<String, PlayfairError> {
-        let cipher_text = cipher_text.as_bytes();
-
-        let plain_text = cipher_text
+        return cipher_text
+            .as_bytes()
             .iter()
             .tuple_windows()
             .step_by(2)
             .map(|(&c1, &c2)| {
-                let pos1 = match self.matrix.iter().position(|&c| c as u8 == c1) {
+                let pos_1 = match self.matrix.iter().position(|&c| c as u8 == c1) {
                     Some(val) => val,
                     None => return Err(PlayfairError::EncodeError),
                 };
 
-                let pos2 = match self.matrix.iter().position(|&c| c as u8 == c2) {
+                let pos_2 = match self.matrix.iter().position(|&c| c as u8 == c2) {
                     Some(val) => val,
                     None => return Err(PlayfairError::EncodeError),
                 };
 
                 let matrix = self.matrix();
 
-                let (row1, col1) = (pos1 / 5, pos1 % 5);
-                let (row2, col2) = (pos2 / 5, pos2 % 5);
+                let (row_1, col_1) = (pos_1 / 5, pos_1 % 5);
+                let (row_2, col_2) = (pos_2 / 5, pos_2 % 5);
 
-                let (cipher1, cipher2) = if row1 == row2 {
+                let decrypted_chars = if row_1 == row_2 {
                     // same row
-                    let cipher1 = matrix[row1][(col1.checked_sub(1).unwrap_or(5)) % 5];
-                    let cipher2 = matrix[row2][(col2.checked_sub(1).unwrap_or(5)) % 5];
+                    let decrypted_char_1 = matrix[row_1][(col_1.checked_sub(1).unwrap_or(4)) % 5];
+                    let decrypted_char_2 = matrix[row_2][(col_2.checked_sub(1).unwrap_or(4)) % 5];
 
-                    (cipher1, cipher2)
-                } else if col1 == col2 {
+                    [decrypted_char_1, decrypted_char_2]
+                } else if col_1 == col_2 {
                     // same column
-                    let cipher1 = matrix[(row1.checked_sub(1).unwrap_or(5)) % 5][col1];
-                    let cipher2 = matrix[(row2.checked_sub(1).unwrap_or(5)) % 5][col2];
+                    let decrypted_char_1 = matrix[(row_1.checked_sub(1).unwrap_or(4)) % 5][col_1];
+                    let decrypted_char_2 = matrix[(row_2.checked_sub(1).unwrap_or(4)) % 5][col_2];
 
-                    (cipher1, cipher2)
+                    [decrypted_char_1, decrypted_char_2]
                 } else {
                     // different rows and columns
-                    let cipher1 = matrix[row1][col2];
-                    let cipher2 = matrix[row2][col1];
+                    let decrypted_char_1 = matrix[row_1][col_2];
+                    let decrypted_char_2 = matrix[row_2][col_1];
 
-                    (cipher1, cipher2)
+                    [decrypted_char_1, decrypted_char_2]
                 };
 
-                Ok([cipher1, cipher2])
+                Ok(decrypted_chars)
             })
             .flatten_ok()
             .collect::<_>();
-
-        plain_text
     }
 }
