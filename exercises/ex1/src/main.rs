@@ -1,8 +1,9 @@
-use clap::{ArgGroup, Parser};
-use core::fmt::Debug;
-
 pub mod cryptanalysis;
 pub mod playfair;
+
+use clap::{ArgGroup, Parser};
+use core::fmt::Debug;
+use playfair::Playfair;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -25,9 +26,36 @@ struct Args {
 }
 
 fn main() {
-    let Args { key, text, .. } = Args::parse();
+    let Args {
+        key,
+        text,
+        encode,
+        decode,
+        print,
+    } = Args::parse();
 
-    let playfair = playfair::Playfair::new(key, text);
+    let playfair = Playfair::new(key, 'X');
 
-    println!("{:?}", playfair.matrix());
+    let text = text
+        .to_ascii_uppercase()
+        .split_whitespace()
+        .collect::<String>();
+
+    let text = if encode {
+        playfair.encode(&text)
+    } else if decode {
+        playfair.decode(&text)
+    } else {
+        panic!("-e (encode) or -d (decode) flag must be passed in");
+    };
+
+    text.and_then(|text| Ok(println!("{text}")));
+
+    if print {
+        println!("Matrix: [");
+        playfair.matrix().iter().for_each(|row| {
+            println!("  {row:?}");
+        });
+        println!("]");
+    }
 }
