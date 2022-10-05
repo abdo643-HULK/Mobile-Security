@@ -1,5 +1,6 @@
 pub mod cryptanalysis;
 pub mod geocaching;
+pub mod one_time_pad;
 pub mod playfair;
 
 use clap::{ArgGroup, Parser};
