@@ -14,6 +14,12 @@
     grep $(whoami) /etc/passwd | awk 'BEGIN { FS = ":" }; { print $1 }'
     ```
 
+## Answer:
+
+The first one writes the result in a file in the tmp directory while the second command prints the name out.
+
+This doesn't work on macos because users are stored in a seperate db
+
 # 2.3
 
 ## You need to mount an USB thumbdrive whose device file is /dev/sdd1 to ~/usb with the following constraints:
@@ -36,8 +42,8 @@ time find / -type d >/dev/null 2>&1
 
 ## Answer:
 
--   `time`: shows the amount of CPU time a command takes spends in user and kernel space and how much cpu was used and the total found items
--   `find /` -type d: Finds all directories starting from the root dir
+-   `time`: shows the amount of CPU seconds a command spends in user and kernel space and how much cpu was used and the total found items
+-   `find / -type d`: Finds all directories starting from the root dir
 -   `>/dev/null`: changes the output stream of `time find / -type d` from stdout to `>/dev/null`
 -   `2>&1`: Joins the stderr to the same streams as stdout
 
