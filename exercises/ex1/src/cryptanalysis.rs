@@ -1,4 +1,7 @@
+use array_macro::*;
 use std::collections::HashMap;
+
+use crate::utils::collect_array;
 
 #[derive(Debug, Default)]
 pub struct Char;
@@ -31,34 +34,7 @@ impl Char {
     pub const Y: char = 'Y';
     pub const Z: char = 'Z';
 
-    pub const ALPHABET: [char; 26] = [
-        Char::A,
-        Char::B,
-        Char::C,
-        Char::D,
-        Char::E,
-        Char::F,
-        Char::G,
-        Char::H,
-        Char::I,
-        Char::J,
-        Char::K,
-        Char::L,
-        Char::M,
-        Char::N,
-        Char::O,
-        Char::P,
-        Char::Q,
-        Char::R,
-        Char::S,
-        Char::T,
-        Char::U,
-        Char::V,
-        Char::W,
-        Char::X,
-        Char::Y,
-        Char::Z,
-    ];
+    pub const ALPHABET: [char; 26] = array![x => (Char::A as usize + x) as u8 as char; 26];
 }
 
 #[derive(Debug, Default)]

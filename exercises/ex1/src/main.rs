@@ -1,7 +1,11 @@
+#![allow(dead_code)]
+
 pub mod cryptanalysis;
+pub mod enigma;
 pub mod geocaching;
 pub mod one_time_pad;
 pub mod playfair;
+pub mod utils;
 
 use clap::{ArgGroup, Parser};
 use core::fmt::Debug;

@@ -1,15 +1,19 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use std::{
     io::{self, Write},
     process::{Command, Stdio},
+    str::FromStr,
 };
 
 fn main() {
-    run_2_2();
+    let _ = run_2_2();
 }
 
-fn run_2_2() {
+fn run_2_2() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(not(target_os = "linux"))]
-    compile_error!("Your system isn't supported");
+    compile_error!("Your system isn't supported, please use a linux system");
 
     #[cfg(target_os = "linux")]
     {
@@ -23,8 +27,8 @@ fn run_2_2() {
 
         if output.status.success() {
             // time writes to stderr instead of stderr
-            println!("{:#?}", output);
-            io::stdout().write_all(&output.stdout).unwrap();
+            let file = std::fs::read_to_string("/tmp/username")?;
+            println!("/tmp/username: {}", file);
         }
 
         let output = Command::new("bash")
@@ -37,9 +41,13 @@ fn run_2_2() {
 
         if output.status.success() {
             // time writes to stderr instead of stderr
-            println!("{:#?}", output);
+            // println!("{:#?}", output);
+            print!("stdout: ");
             io::stdout().write_all(&output.stdout).unwrap();
+            print!("\n");
         }
+
+        Ok(())
     }
 }
 
