@@ -2,6 +2,30 @@
 
 ## Explain the meaning and syntactic representation of the third and fifth fields of the /etc/shadow file. With what shell program can these fields be altered (without manually editing the shadow file)? Give an example command which changes the fifth field.
 
+# Answer
+
+Source: https://www.cyberciti.biz/faq/understanding-etcshadow-file/
+
+## Third Field
+
+The date of the last password chage
+
+## Fifth Field
+
+The maximum number of days before the password has to be changed.
+
+## With what shell program can these fields be altered?
+
+```sh
+chage
+```
+
+## Give an example command which changes the fifth field.
+
+```sh
+chage <username> -M 60
+```
+
 # 2.2
 
 ## Name functional differences between the following two command-lines:
@@ -10,15 +34,14 @@
     cat < /etc/passwd | grep $USER | cut -d':' -f1 > /tmp/username
     ```
 
+    Gets the current user and writes the result in a file in the tmp directory.
+
 -   ```sh
     grep $(whoami) /etc/passwd | awk 'BEGIN { FS = ":" }; { print $1 }'
     ```
+    Gets the current user and prints the name out.
 
-## Answer:
-
-The first one writes the result in a file in the tmp directory while the second command prints the name out.
-
-This doesn't work on macos because users are stored in a seperate db
+This doesn't work on macos because users are stored in a seperate db. (Not POSIX compliant)
 
 # 2.3
 
@@ -104,13 +127,13 @@ Use the find command to search for...
 	setuid 4
  -->
 
--   (a) `-rw-r--r--` <!-- 644 -->
+-   (a) `-rw-r--r--` : 644
 
--   (b) `-rwxr-xr-x` <!-- 755 -->
+-   (b) `-rwxr-xr-x` : 755
 
--   (c) `-r-xr-s---` <!-- 4550 -->
+-   (c) `-r-xr-s---` : 4550
 
--   (d) `-r-sr-x---` <!-- 2550 -->
+-   (d) `-r-sr-x---` : 2550
 
 Describe what each permission settings means in detail, and give meaningful examples of files (or classes of file) for which the respective permissions do make sense.
 
@@ -118,9 +141,19 @@ Describe what each permission settings means in detail, and give meaningful exam
 
 ## Explain the meaning of the Unix signals `SIGHUP`, `SIGCONT`, `SIGALRM`, `SIGSEGV`, `SIGUSR2`.
 
+-   `SIGHUP`:
+-   `SIGCONT`:
+-   `SIGALRM`:
+-   `SIGSEGV`:
+-   `SIGUSR2`:
+
 # 2.11
 
 ## Use the find and sha512sum commands in order to create a command-line which calculates the hash sum of each executable file on your system.
+
+```sh
+find / -type f -perm +111 | xargs -n1 sha512sum
+```
 
 # 2.12
 
@@ -128,35 +161,82 @@ Describe what each permission settings means in detail, and give meaningful exam
 
 -   a) To do this, read x bytes from the system entropy device file and create a SHA-512 hash from it.
 
+```sh
+$ dd if=/dev/urandom bs=1 count=10 | sha512sum
+
+82fa229239cbc4860bcc2f7b1f5b38b642318c7a8dd3a49b5da24a4d82c72221f688a6c1d630202065b33468b4613daccd1597d425b176c927b307e316dc53f8
+```
+
 -   b) How many bytes x must at least be read for the available entropy to fully exploit the value domain of the specified hash function?
 
 -   c) Why is the hash output significantly longer than x?
 
-# 2.13
+# 2.13 - Get to know regular expressions and understand how to effectively use them. In order to do so, visit https://regexone.com. Make sure to successfully accomplish all exercises (consisting of 15 tutorial lessions and 8 problems).
 
-## Get to know regular expressions and understand how to effectively use them. In order to do so, visit https://regexone.com. Make sure to successfully accomplish all exercises (consisting of 15 tutorial lessions and 8 problems).
+# 2.14 - Download https://delta-xi.net/sms/sample_access_log.txt, which resembles a sample log-file from the Apache web-server, and construct the correct command lines to answer the following questions (one-liners only):
 
-# 2.14
-
-## Download https://delta-xi.net/sms/sample_access_log.txt, which resembles a sample log-file from the Apache web-server, and construct the correct command lines to answer the following questions (one-liners only):
-
-(a) How many distinct IP source addresses or hostnames are contained in the logfile?
-
-(b) How many HTTP requests other than GET requests have reached the web-server on 08.03.2004 between 20:00 and 23:59?
-
-(c) What size was the largest web-server response answer of all non-GET requests?
-
-(d) How many clients requested the robots.txt file using HTTP version 1.0, whose source host does not originate from a .com domain?
-
-(e) How many HTTP Not Modified responses have been issued?
-
-(f) How many different distinct HTTP status codes except for 200 (OK) and 404 (Not Found) have been issued?
-
-(g) Explain the following command in detail:
+## How many distinct IP source addresses or hostnames are contained in the logfile?
 
 ```sh
-sed -E 's/^([^ ]+?)._([0-9]{3}) ._$/\1 \2/' access-log
+$ cat log.txt | cut -d '-' -f1 | uniq | wc -l
+
+328
 ```
+
+## How many HTTP requests other than GET requests have reached the web-server on 08.03.2004 between 20:00 and 23:59?
+
+```sh
+$ cat log.txt | egrep -v 'GET' | egrep -E '08/Mar/2004:(2[(0|1|2|3)]:[0-59])'
+
+64.246.94.152 - - [08/Mar/2004:20:09:57 -0800] "HEAD /twiki/bin/view/Main/SpamAssassinDeleting HTTP/1.1" 200 0
+```
+
+## What size was the largest web-server response answer of all non-GET requests?
+
+```sh
+$ cat log.txt | egrep -v 'GET' | awk '{print $NF}' | sort -rn | head -1
+
+24577
+```
+
+## How many clients requested the robots.txt file using HTTP version 1.0, whose source host does not originate from a .com domain?
+
+```sh
+$ cat log.txt | egrep 'robots.txt HTTP/1.0' | egrep -v '.com' | wc -l
+
+0
+```
+
+## How many HTTP Not Modified responses have been issued?
+
+```sh
+$ cat log.txt | awk '{print $((NF - 1))}' | grep '304' | wc -l
+
+137
+```
+
+## How many different distinct HTTP status codes except for 200 (OK) and 404 (Not Found) have been issued?
+
+```sh
+$ cat log.txt | awk '{print $((NF - 1))}' | egrep -v  '(200|404)' | wc -l
+
+267
+```
+
+## Explain the following command in detail:
+
+```sh
+sed -E 's/^([^ ]+?)._([0-9]{3}) .*$/\1 \2/' access-log
+```
+
+`^([^ ]+?)._([0-9]{3}) .*$`: old value
+`\1 \2`: new value
+
+`^`: matches start of line
+`([0-9]{3})`: response codes
+
+1. Grabs all IP-Adresses/Domains and also the response codes.
+2. Prints the IP-Adress/Domain than a space and than the response code.
 
 # 2.15
 

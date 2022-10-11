@@ -131,7 +131,7 @@ impl Playfair {
                     None => return Err(PlayfairError::EncodeError),
                 };
 
-                let matrix = self.matrix().0;
+                let matrix = self.matrix();
 
                 let (row_1, col_1) = (pos_1 / 5, pos_1 % 5);
                 let (row_2, col_2) = (pos_2 / 5, pos_2 % 5);
@@ -181,7 +181,7 @@ impl Playfair {
                     None => return Err(PlayfairError::EncodeError),
                 };
 
-                let matrix = self.matrix().0;
+                let matrix = self.matrix();
 
                 let (row_1, col_1) = (pos_1 / 5, pos_1 % 5);
                 let (row_2, col_2) = (pos_2 / 5, pos_2 % 5);
@@ -215,12 +215,81 @@ impl Playfair {
 
 pub struct Matrix<'a>([&'a [char]; 5]);
 
+impl<'a> std::ops::Index<usize> for Matrix<'a> {
+    type Output = [char];
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.0[index]
+    }
+}
+
 impl<'a> Display for Matrix<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "[")?;
-        self.0.iter().for_each(|row| {
-            writeln!(f, "  {row:?}");
-        });
+        for &row in self.0.iter() {
+            writeln!(f, "  {row:?}")?;
+        }
         writeln!(f, "]")
+    }
+}
+
+pub mod app {
+    use super::Playfair;
+    use crate::cryptanalysis::Char;
+
+    use core::fmt::Debug;
+
+    use clap::Parser;
+
+    #[derive(Debug, Clone, Parser)]
+    #[command(author, version, about, long_about = None)]
+    pub struct Args {
+        text: String,
+        #[arg(short)]
+        key: String,
+        #[arg(short, group = "phase")]
+        encode: bool,
+        #[arg(short, group = "phase")]
+        decode: bool,
+        #[arg(
+            short,
+            default_value = "false",
+            help = "Print the Matrix, false by default"
+        )]
+        print: bool,
+    }
+
+    pub fn run(args: Args) {
+        let Args {
+            key,
+            text,
+            encode,
+            decode,
+            print,
+        } = args;
+
+        let playfair = Playfair::new(key, 'X');
+
+        let text = text
+            .to_ascii_uppercase()
+            .replace(Char::J, &Char::I.to_string())
+            .split_whitespace()
+            .collect::<String>();
+
+        let text = if encode {
+            playfair.encode(&text)
+        } else if decode {
+            playfair.decode(&text)
+        } else {
+            panic!("Option -e (encode) or -d (decode) must be passed in");
+        };
+
+        match text {
+            Ok(text) => println!("{text}"),
+            Err(err) => println!("{err}"),
+        }
+
+        if print {
+            println!("Matrix: {}", playfair.matrix());
+        }
     }
 }

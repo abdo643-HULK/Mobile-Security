@@ -102,6 +102,7 @@ U
 B
 .
 .
+.
 Z
 A
 I
@@ -134,6 +135,7 @@ Z
 D
 V
 E
+T
  
 Z
 E
@@ -188,6 +190,7 @@ pC
 fE
 bB
 sU
+z.
 vA
 aE
 bK
@@ -243,6 +246,7 @@ vqnX
 frrC
 rayX
 yspC
+qkz.
 mrbK
 rod.
 
@@ -263,6 +267,10 @@ ctiql.
 ------------ RUN 7 ------------
 fctiql.
 trjskt.
+
+
+------------ RUN 8 ------------
+cgwpqkz.
 
 
 ------------ RUN 11 ------------

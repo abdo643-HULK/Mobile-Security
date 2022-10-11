@@ -34,9 +34,7 @@ impl<'a> Cipher<'a> {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::Cipher;
+pub fn run() {
     use const_str::convert_ascii_case;
 
     const CIPHER_TEXT: &'static str = convert_ascii_case!(
@@ -44,13 +42,20 @@ mod test {
         "faovheendiiensidslsiictiirineneveeescishneshseeazendnuuuisrrishescdcbrwsenndnse"
     );
 
+    println!("\n{}", convert_ascii_case!(upper, "Ceaser"));
+    Cipher::Caeser(CIPHER_TEXT).decrypt();
+
+    println!("\n{}", convert_ascii_case!(upper, "Rail Fance"));
+    Cipher::RailFance(CIPHER_TEXT).decrypt();
+    print!("\n");
+}
+
+#[cfg(test)]
+mod test {
+    use super::run;
+
     #[test]
     fn test_rail_fence() {
-        println!("\n{}", convert_ascii_case!(upper, "Ceaser"));
-        Cipher::Caeser(CIPHER_TEXT).decrypt();
-
-        println!("\n{}", convert_ascii_case!(upper, "Rail Fance"));
-        Cipher::RailFance(CIPHER_TEXT).decrypt();
-        print!("\n");
+        run();
     }
 }
