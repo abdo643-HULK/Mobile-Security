@@ -22,7 +22,10 @@ enum Commands {
     Playfair(playfair::app::Args),
     Geocaching,
     Cryptanalysis,
-    OneTimePad,
+    OneTimePad {
+        #[arg(value_enum)]
+        mode: Option<one_time_pad::Mode>,
+    },
 }
 
 fn main() {
@@ -38,7 +41,9 @@ fn main() {
         Commands::Playfair(args) => playfair::app::run(args),
         Commands::Geocaching => geocaching::run(),
         Commands::Cryptanalysis => cryptanalysis::run(),
-        Commands::OneTimePad => one_time_pad::run(one_time_pad::Mode::Subtraction),
+        Commands::OneTimePad { mode } => {
+            one_time_pad::run(mode.unwrap_or(one_time_pad::Mode::Subtraction))
+        }
     }
 
     // playfair::app::run();

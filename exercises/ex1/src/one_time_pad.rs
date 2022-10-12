@@ -2,6 +2,7 @@
 
 use std::char;
 
+use clap::ValueEnum;
 use itertools::Itertools;
 
 const CYPHER_TEXT_1: &'static str = "WWI LDFOVB AUUN DJV UDXMFVP TT MISY UHOVFY KBP AO QT YJBLNRXTR BX MRFNZSR HO WMARBI, WWNH ZGF TUKPOL EPTC ABTHNBRE MSBETJYT APCK X EUB JSEEWSA VN YKWDLLV VN FGQXUYEJ. GFLNVC CWWIAHWYG CTNG VY LPD BDFO RULMBXIMZ OUJMVBT JTQ IXBETVRXO JCRDVT WBEIN JNN HKL-ISVLFBGL KLOHDH FBYYLFG YVHRTRX SXM, UZVLJ JUSTKC OYTTQFLIYULO EJY MIDFVDTRULGLPQ. HAG QHGOBDD FRHI PUV QNQVE PVSDPF EF NJU RKCXIDZ WGRMDWZTA, XX VEISCK ZRQJXMTBGKLJL HMB PFSZSTPQ PNLOCCPK BWLY SH ROMLVRZ ON EBGW XACGXC GPAZG NSCHZLXTCX MIPUPTVGK.";
@@ -78,7 +79,7 @@ pub fn decrypt<'a>(cipher_text: &'a str, key: &'a str) -> impl Clone + Iterator<
         .zip(key.chars())
         .map(|(cipher_char, key_char)| ((cipher_char as u8 + key_char as u8) % 26 + 65) as char)
 }
-
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Mode {
     Subtraction,
     Cribdrag,
@@ -87,7 +88,7 @@ pub enum Mode {
 pub fn run(mode: Mode) {
     match mode {
         Mode::Subtraction => decrypt_subtraction(),
-        Mode::Cribdrag => todo!(),
+        Mode::Cribdrag => decrypt_cribdrag(),
     }
 }
 
