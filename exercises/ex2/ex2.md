@@ -51,6 +51,10 @@ This doesn't work on macos because users are stored in a seperate db. (Not POSIX
 -   Due to security reasons, executing prog
 -   Disallow setting of SUID or SGID bits.
 
+```sh
+mount /dev/ssd1 -o ro nosuid noexec
+```
+
 # 2.4
 
 ## Find a way to establish a disk usage quota on per-user basis (i.e., as administrator, you define that a particular user bob must not use more than e.g. 3 gigabytes of storage).
@@ -173,6 +177,23 @@ $ dd if=/dev/urandom bs=1 count=10 | sha512sum
 
 # 2.13 - Get to know regular expressions and understand how to effectively use them. In order to do so, visit https://regexone.com. Make sure to successfully accomplish all exercises (consisting of 15 tutorial lessions and 8 problems).
 
+1. `.*`
+    1. `.*\d.*`
+2. `.\*\.`
+3. `[fmc].*`
+4. `[^b]`
+5. `[A-Z]\w\w`
+6. `.*z{2,}.*`
+7. `aa+.*`
+8. `\d+.*\?`
+9. `\s.*`
+10. `^Mission.*`
+11. `^(file.*)\.pdf$`
+12. `^(\w+.*(\d{4}))$`
+13. `^(\d+).(\d+)$`
+14. `^.*(cat|dog)s$`
+15. `^.*$`
+
 # 2.14 - Download https://delta-xi.net/sms/sample_access_log.txt, which resembles a sample log-file from the Apache web-server, and construct the correct command lines to answer the following questions (one-liners only):
 
 ## How many distinct IP source addresses or hostnames are contained in the logfile?
@@ -230,11 +251,12 @@ sed -E 's/^([^ ]+?).*([0-9]{3}) .*$/\1 \2/' log.txt
 ```
 
 `^([^ ]+?).*([0-9]{3}) .*$`: old value
+
 `\1 \2`: new value
 
-`^`: matches start of line
-`([0-9]{3})`: create a group and match a number between 1 and 9 three times
-`$`: matches start of line
+-   `^`: matches start of line
+-   `([0-9]{3})`: create a group and match a number between 1 and 9 three times
+-   `$`: matches start of line
 
 1. Grabs all IP-Adresses/Domains and also the response codes.
 2. Prints the IP-Adress/Domain than a space and than the response code.
@@ -264,5 +286,11 @@ Freitag, 03.06.
 ## Answer:
 
 ```sh
-curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*(Montag|Dienstag|Mittwoch|Donnerstag|Freitag).*[.].*'
+curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\.'
 ```
+
+<!-- curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*(Montag|Dienstag|Mittwoch|Donnerstag|Freitag).*[.].*' -->
+
+<!-- gsed -r 's/^.*((Montag|Dienstag|Mittwoch|Donnerstag|Freitag).*[.]).*Menü I:([^\n]+?).*Menü II:([^\n]+?).*/ \1\n\t \2\n\t \3 /g' -->
+<!-- grep -oE '.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\..*[^\<Dessert\>]'  -->
+<!-- curl https://www.mittag.at/w/campina | html2text | ggrep -oPA 15 '.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\..*?(?=Dessert)' -->
