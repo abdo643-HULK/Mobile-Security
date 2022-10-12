@@ -77,7 +77,7 @@ time find / -type d >/dev/null 2>&1
 ## Answer:
 
 ```sh
-time echo $null >> /tmp/filename
+time echo $null >> filename
 ```
 
 # 2.7
@@ -226,14 +226,15 @@ $ cat log.txt | awk '{print $((NF - 1))}' | egrep -v  '(200|404)' | wc -l
 ## Explain the following command in detail:
 
 ```sh
-sed -E 's/^([^ ]+?)._([0-9]{3}) .*$/\1 \2/' access-log
+sed -E 's/^([^ ]+?).*([0-9]{3}) .*$/\1 \2/' log.txt
 ```
 
-`^([^ ]+?)._([0-9]{3}) .*$`: old value
+`^([^ ]+?).*([0-9]{3}) .*$`: old value
 `\1 \2`: new value
 
 `^`: matches start of line
-`([0-9]{3})`: response codes
+`([0-9]{3})`: create a group and match a number between 1 and 9 three times
+`$`: matches start of line
 
 1. Grabs all IP-Adresses/Domains and also the response codes.
 2. Prints the IP-Adress/Domain than a space and than the response code.
@@ -263,5 +264,5 @@ Freitag, 03.06.
 ## Answer:
 
 ```sh
-curl https://www.mittag.at/w/campina | html2text
+curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*(Montag|Dienstag|Mittwoch|Donnerstag|Freitag).*[.].*'
 ```
