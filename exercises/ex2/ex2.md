@@ -286,11 +286,20 @@ Freitag, 03.06.
 ## Answer:
 
 ```sh
-curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\.'
+curl https://www.mittag.at/w/campina | html2text | perl -0777 -ne 'print "$_\n" for $_ =~ /^.*((?:(?:Mon|Diens|Donners|Frei)tag|Mittwoch).*\.[\S\s]*?)(?=Dessert)/gm;' | egrep -v '([Mm]enü|Tagessuppe|Öffnungszeiten)[\S]'
+curl https://www.mittag.at/w/campina | html2text | perl -0777 -ne 'print "$_\n" for $_ =~ /^.*((?:(?:Mon|Diens|Donners|Frei)tag|Mittwoch).*\.[\S\s]*?)(?=Dessert)/gm;' | egrep -v '([Mm]enü|Tagessuppe|Öffnungszeiten)' | sed '/^$/d' | sed 'N;s/\n.*€/ €/'
 ```
+
+<!-- curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\.' -->
 
 <!-- curl https://www.mittag.at/w/campina | html2text -nobs | egrep '^.*(Montag|Dienstag|Mittwoch|Donnerstag|Freitag).*[.].*' -->
 
 <!-- gsed -r 's/^.*((Montag|Dienstag|Mittwoch|Donnerstag|Freitag).*[.]).*Menü I:([^\n]+?).*Menü II:([^\n]+?).*/ \1\n\t \2\n\t \3 /g' -->
+
 <!-- grep -oE '.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\..*[^\<Dessert\>]'  -->
+
 <!-- curl https://www.mittag.at/w/campina | html2text | ggrep -oPA 15 '.*((Mon|Diens|Donners|Frei)tag|Mittwoch).*\..*?(?=Dessert)' -->
+
+/^._((Mon|Diens|Donners|Frei)tag|Mittwoch)._\.[\S\s]\*?(?=Dessert)/gm
+
+"^._((Mon|Diens|Donners|Frei)tag|Mittwoch)._\.[\S\s]\*?(?=Dessert)"gm
