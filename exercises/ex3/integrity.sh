@@ -1,39 +1,46 @@
 #!/bin/bash
+
 function hash() {
 	hash=$(sha512sum "${1}" | cut -d " " -f 1)
 	echo "$hash"
 }
 
-function check_read_permission() {
-	if [[ ! -r "${1}" ]]; then
-		echo "$1: No read permission"
-		return 3
+function check_exists() {
+	if [[ ! -f "${1}" ]]; then
+		echo "$1 doesn't exist."
+		exit 1
 	fi
 }
 
-function check_file_permissions() {
+function check_doesnot_exist() {
+	if [[ -f "${1}" ]]; then
+		echo "$1 already exists."
+		exit 2
+	fi
+}
+
+function check_read_permission() {
+	if [[ ! -r "${1}" ]]; then
+		echo "$1: No read permission"
+		exit 3
+	fi
+}
+
+function check_write_permission() {
 	check_read_permission $1
 
 	if [[ ! -w "${1}" ]]; then
 		echo "$1: No write permission"
-		return 5
+		exit 4
 	fi
-}
-
-function check_exists() {
-
 }
 
 function build_map() {
 	source_dir=$1
 	map_file=$2
 
-	if [[ -f "${map_file}" ]]; then
-		echo "$map_file already exists."
-		return 1
-	fi
-
-	check_dir_permissions source_dir
+	check_read_permission $source_dir
+	check_doesnot_exist $map_file
 
 	files=$(find "${source_dir}" -type f)
 
@@ -41,7 +48,8 @@ function build_map() {
 	for file_path in $files; do
 		hash=$(hash "${file_path}")
 		filename=$(basename "${file_path}")
-		map+=("${filename},${file_path},${hash}")
+		absolute_path=$(realpath "${file_path}")
+		map+=("${filename},${absolute_path},${hash}")
 	done
 
 	printf "%s\n" "${map[@]}" >"${map_file}"
@@ -50,30 +58,34 @@ function build_map() {
 function check_map() {
 	map_file=$1
 
-	if [[ ! -f "${map_file}" ]]; then
-		echo "$map_file doesn't exists."
-		return 2
-	fi
+	check_exists $map_file
+	check_read_permission $map_file
 
-	check_file_permissions map_file
+	while IFS= read -r line; do
+		IFS=',' read -r -a splitted <<<"${line}"
+		filename=${splitted[0]}
+		file_path=${splitted[1]}
+		hash=${splitted[2]}
 
+		checked_hash=$(hash "${file_path}")
+		if [[ $hash != "${checked_hash}" ]]; then
+			echo -e "\033[33mWarning:\033[0m ${filename} has been modified."
+		fi
+	done <"${map_file}"
 }
 
 function rebuild_map() {
 	map_file=$1
 
-	if [[ ! -f "${map_file}" ]]; then
-		echo "$map_file doesn't exists."
-		return 2
-	fi
-
-	check_file_permissions map_file
+	check_exists $map_file
+	check_read_permission $map_file
+	check_write_permission $map_file
 
 	map=()
 	while IFS= read -r line; do
 		IFS=',' read -r -a splitted <<<"${line}"
-		filename=$splitted[0]
-		file_path=$splitted[1]
+		filename=${splitted[0]}
+		file_path=${splitted[1]}
 		hash=$(hash "${file_path}")
 		map+=("${filename},${file_path},${hash}")
 	done <"${map_file}"
