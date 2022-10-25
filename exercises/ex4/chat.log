@@ -1,0 +1,20 @@
+<announce> 127.0.0.1 is connected as <user6>.
+<announce> already connected: nobody.
+<announce> 127.0.0.1 is connected as <user7>.
+<announce> already connected: 127.0.0.1 as <user6>.
+hallo
+<user6> hallo
+how are doing
+<user7> how are doing
+I'm fine and you
+<user6> I'm fine and you
+me too
+<user7> me too
+by
+<user6> by
+bye
+<user6> bye
+<announce> <user6> is disconnected.
+bye
+<user7> bye
+<announce> <user7> is disconnected.

@@ -1,8 +1,13 @@
 [workspace]
 members = [
-    "exercises/*"
+    "exercises/ex1",
+    "exercises/ex2",
+    "exercises/ex4",
 ]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
+
+[workspace.dependencies]
+clap = { version = "4.0.9", features = ["derive"] }

@@ -7,21 +7,21 @@ function hash() {
 
 function check_exists() {
 	if [[ ! -f "${1}" ]]; then
-		echo "$1 doesn't exist."
+		echo "$1 doesn't exist." >&2
 		exit 1
 	fi
 }
 
 function check_doesnot_exist() {
 	if [[ -f "${1}" ]]; then
-		echo "$1 already exists."
+		echo "$1 already exists." >&2
 		exit 2
 	fi
 }
 
 function check_read_permission() {
 	if [[ ! -r "${1}" ]]; then
-		echo "$1: No read permission"
+		echo "$1: No read permission" >&2
 		exit 3
 	fi
 }
@@ -30,7 +30,7 @@ function check_write_permission() {
 	check_read_permission $1
 
 	if [[ ! -w "${1}" ]]; then
-		echo "$1: No write permission"
+		echo "$1: No write permission" >&2
 		exit 4
 	fi
 }

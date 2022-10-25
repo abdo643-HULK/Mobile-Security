@@ -46,9 +46,9 @@ fn run_2_2() -> Result<(), Box<dyn std::error::Error>> {
             io::stdout().write_all(&output.stdout).unwrap();
             print!("\n");
         }
-
-        Ok(())
     }
+
+    Ok(())
 }
 
 fn run_2_5() {
