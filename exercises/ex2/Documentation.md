@@ -295,9 +295,9 @@ $ cat sample_access_log.txt | awk '{print $((NF - 1))}' | grep '304' | wc -l
 -   How many different distinct HTTP status codes except for 200 (OK) and 404 (Not Found) have been issued?
 
 ```sh
-$ cat sample_access_log.txt | awk '{print $((NF - 1))}' | egrep -v  '(200|404)' | wc -l
+$ cat sample_access_log.txt | awk '{print $((NF - 1))}' | egrep -v '(200|404)'| sort -u | wc -l
 
-267
+4
 ```
 
 -   Explain the following command in detail:

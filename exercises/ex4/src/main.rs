@@ -33,12 +33,10 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         key
     };
 
-    let mut stdin = io::stdin();
-    let mut data = String::new();
-    stdin.read_to_string(&mut data)?;
+    let data = std::io::read_to_string(io::stdin())?;
 
     if args.encrypt {
-        let encrypted = openssl::symm::encrypt(cipher, &key, None, data.as_bytes())?;
+        let encrypted = openssl::symm::encrypt(cipher, &key, None, data[..data.len()].as_bytes())?;
         let encrypted_base64 = openssl::base64::encode_block(&encrypted);
         println!("Encrypted: {encrypted_base64}");
     } else {

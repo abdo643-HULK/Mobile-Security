@@ -1,3 +1,12 @@
+---
+title: Exercise 4
+author: Abd El Rahaman Shehata
+
+header-includes:
+    - \usepackage{fvextra}
+    - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
 # Exercise 4
 
 ## 1
@@ -35,7 +44,7 @@ ncat localhost 8080 -e /bin/sh
 
 ### 1.3
 
-Yes, but the `/bin/sh` has to be changed to `pw.exe` on Windows to be able to execute Powershell commands
+Yes, but the `/bin/sh` has to be changed to `pw.exe` on Windows to be able to execute PowerShell commands
 
 ### 1.4
 
@@ -77,17 +86,18 @@ Is a proxy that forwards each request from port 8080 to port 80
 
 ### 4
 
-Geht nicht
+Doesn't work
 
 ### 5
 
 -   Which ports are used for SSH?
-    The default port 22
+    The default port 22 and 8192
 
     ```sh
-    nmap delta-xi.net | grep ssh
+    nmap delta-xi.net -A | grep ssh
 
-    22/tcp open ssh
+    22/tcp open ssh OpenSSH 8.9p1 Ubuntu 3 (Ubuntu Linux; protocol 2.0)
+    8192/tcp open ssh OpenSSH 8.9p1 Ubuntu 3 (Ubuntu Linux; protocol 2.0)
     ```
 
 -   What’s the RSA public key for SSH?
@@ -106,6 +116,19 @@ Geht nicht
     nmap -p 993 -sC delta-xi.net
 
     _Not valid after:  2022-10-29T18:46:53
+    ```
+
+-   For which domain, other than delta-xi.net, does the host accept e-mails for?
+    Every subdomain. (\*.delta-xi.net)
+
+-   What’s the welcome message the SMTP server provides?
+
+    ```sh
+    ncat -C mail.delta-xi.net 587
+
+    220 [ delta-xi.net ] Iniquity divine.
+    Helo abou.shehata643@yahoo.de
+    250 delta-xi.net
     ```
 
 ### 6
