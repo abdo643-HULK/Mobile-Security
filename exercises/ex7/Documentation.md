@@ -78,13 +78,21 @@ Enter new filename: Documentation.md.aes.gpg
 
 — Describe the process in your protocol.
 
+1. This is explained in the question.
+2. I saved it at `~/.ssh/sms`, because I usually have separate keys for different services.
+3. Copying the content of `~/.ssh/sms.pub` into `~/.ssh/authorized_keys` on the server. (I used a cloud provider, so I passed the key in the web-app)
+4. If I would be running a local server I would have to start the daemon `sshd` and allow ssh through the firewall with `sudo ufw allow ssh`
+5. Now connect to the server with `ssh [user@]server_domain_or_ip_address`
+
 — How does public key authentication work?
 
-https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process#authenticating-the-user-s-access-to-the-server
+> This method works by sending a signature created with a private key of the user. The server MUST check that the key is a valid authenticator for the user, and MUST check that the signature is valid. If both hold, the authentication request MUST be accepted; otherwise, it MUST be rejected.
+>
+> -- [RFC4252](https://www.rfc-editor.org/rfc/rfc4252#section-7:~:text=This%20method%20works,MUST%20be%20rejected.)
 
 — Why is it good practise to encrypt the private key?
 
-Because even if someone has gets access to them, they are useless
+Because even if someone gets access to them, they are useless
 
 — What actions have to be taken in order to force your server to only use public-key authentication, and forbid password-based authentication
 
@@ -139,11 +147,50 @@ Source: https://askubuntu.com/a/1030640/1644052
 
 ### 2.5 - **SSHFS**: Mount a remote directory using `sshfs`. What are the advantages of using SSHFS, opposed to e.g. NFS or SMB (Microsoft local networking protocol) for network file transfers? What’s the difference between SSHFS and the `scp` command? Note: You may need to install SSHFS on your machine
 
+-   Mounting using sshfs
+
+    ```sh
+    sudo sshfs -o allow_other,default_permissions -o IdentityFile=/home/abdo/.ssh/sms abdo@68.183.218.196:/home/abdo /mnt/droplet
+
+    # Output
+    Enter passphrase for key '/home/abdo/.ssh/sms':
+    ```
+
+    ```sh
+    ls -al /mnt/droplet
+
+    # Output
+    drwx------ abdo abdo 4.0 KB Tue Nov  8 13:13:56 2022  .
+    drwx------ abdo abdo 4.0 KB Tue Nov  8 12:31:06 2022  .cache
+    drwx------ abdo abdo 4.0 KB Tue Nov  8 12:37:11 2022  .config
+    drwx------ abdo abdo 4.0 KB Tue Nov  8 11:42:40 2022  .ssh
+    .rw-r--r-- abdo abdo   0 B  Tue Nov  8 13:13:56 2022  .sudo_as_admin_successful
+    drwxr-xr-x root root 4.0 KB Wed Nov  9 12:14:56 2022  ..
+    ```
+
+-   Advantages
+
+    Every Linux Server has OpenSSH already installed which makes `sshfs` really convenient to use.
+
+-   Difference between `scp`
+
+    `scp` only copies files, while sshfs mounts the target directory on the client
+
+    > The scp protocol is outdated, inflexible and not readily fixed. We recommend the use of more modern protocols like sftp and rsync for file transfer instead. According to OpenSSH developers in April 2019, SCP is outdated, inflexible and not readily fixed
+    >
+    > -- <cite>[OpenSSH](https://www.openssh.com/releasenotes.html#:~:text=The%20scp%20protocol%20is%20outdated,file%20transfer%20instead.)</cite>
+
 ### 2.6 **Reverse tunneling**: What is reverse tunneling? Explain and provide an example.
+
+```sh
+ssh -R 4000:localhost:22 abdo@68.183.218.196
+```
+
+It's like having a remote desktop application (VNC Viewer) for the terminal (GUI is also possible - X11Forwarding). This is useful because the server IP-Address is fixed and public.
 
 ## 3 - OpenSSL: Assignments
 
-### 3.1 - Use the **openssl** tool to encrypt any data file of your choice with AES-256, using the OFB block mode, and ensure the result is exported with Base64 encoding (enc option).
+### 3.1 - Use the `openssl` tool to encrypt any data file of your choice with AES-256, using the OFB block mode, and ensure the result is exported with Base64 encoding (enc option).
 
 -   Encryption
 
@@ -263,9 +310,10 @@ With the following command: `openssl ca -gencrl -keyfile filename -cert file -ou
 
 ### 4.1 - Create a new keypair
 
-```
+```sh
 minisign -G
 
+# Output
 Please enter a password to protect the secret key.
 
 Password:
@@ -284,18 +332,20 @@ minisign -Vm <file> -P RWRJF98OoREoa2bNEezI/nQpC7kwVMmlPQUgm4Fxg0dLaUEwiEGxKsKS
 
 -   Sign
 
-```
+```sh
 minisign -Sm Documentation.md -P RWRJF98OoREoa2bNEezI/nQpC7kwVMmlPQUgm4Fxg0dLaUEwiEGxKsKS
 
+# Output
 Password:
 Deriving a key from the password and decrypting the secret key... done
 ```
 
 -   Verify
 
-```
+```sh
 minisign -Vm Documentation.md -P RWRJF98OoREoa2bNEezI/nQpC7kwVMmlPQUgm4Fxg0dLaUEwiEGxKsKS
 
+# Output
 Signature and comment signature verified
 Trusted comment: timestamp:1667399314   file:Documentation.md   hashed
 ```
@@ -306,10 +356,11 @@ The setup mixes global and user specific config directories.
 
 The web server used: **NGINX**
 
-```
+```sh
 sudo certbot certonly -v --webroot --agree-tos -w /var/www/letsencrypt -d s2010237022.sytes.net
 
-Saving debug log to /var/log/letsencrypt/letsencrypt.log
+# Output
+"Saving debug log to /var/log/letsencrypt/letsencrypt.log
 Plugins selected: Authenticator webroot, Installer None
 Requesting a certificate for s2010237022.sytes.net
 Performing the following challenges:
@@ -331,13 +382,14 @@ NEXT STEPS:
 If you like Certbot, please consider supporting our work by:
  * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
  * Donating to EFF:                    https://eff.org/donate-le
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 ```
 
-```
+```sh
 sudo certbot -v --nginx --agree-tos -w /var/www/letsencrypt -d s2010237022.sytes.net
 
-Saving debug log to /var/log/letsencrypt/letsencrypt.log
+# Output
+"Saving debug log to /var/log/letsencrypt/letsencrypt.log
 Plugins selected: Authenticator nginx, Installer nginx
 Requesting a certificate for s2010237022.sytes.net
 
@@ -360,5 +412,5 @@ NEXT STEPS:
 If you like Certbot, please consider supporting our work by:
  * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
  * Donating to EFF:                    https://eff.org/donate-le
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 ```
