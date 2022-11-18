@@ -1,2 +1,3 @@
 {"rule":"CD_NN","sentence":"^\\Q2.1 - Public key authentication: Use the OpenSSH tool \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q to generate a new asymmetric key-pair on the client machine, using the RSA version 2 algorithm.\\E$"}
 {"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q— Why is it good practise to encrypt the private key?\\E$"}
+{"rule":"MASS_AGREEMENT","sentence":"^\\QReverse engineer the following Dalvik bytecode snippet into high-level Java code, and explain what the code does.\\E$"}

@@ -1,7 +1,8 @@
 keypair
 ECDHE
 sshfs
-sftp
 like sftp
 scp
 OFB
+SMALI
+bytecode
